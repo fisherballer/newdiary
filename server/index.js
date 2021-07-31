@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 // const connection = require("./db");
-const pool = require("./db");
+const pooltool = require("./db");
 
 app.use(cors());
 app.use(express.json());
@@ -12,7 +12,7 @@ app.use(express.json());
 app.post("/todos", async (req, res) => {
   try {
     const { description } = req.body;
-    const newTodo = await pool.query(
+    const newTodo = await pooltool.query(
       "INSERT INTO todo (description) values ($1) returning *",
       [description]
     );
@@ -25,7 +25,9 @@ app.post("/todos", async (req, res) => {
 //get all todos
 app.get("/todos", async (req, res) => {
   try {
-    const allTodos = await pool.query("SELECT * FROM todo ORDER BY todo_id");
+    const allTodos = await pooltool.query(
+      "SELECT * FROM todo ORDER BY todo_id"
+    );
     res.json(allTodos.rows);
   } catch (err) {
     console.error(err.message);
@@ -35,7 +37,7 @@ app.get("/todos", async (req, res) => {
 app.get("/todos/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const todo = await pool.query("SELECT * FROM todo WHERE todo_id = $1", [
+    const todo = await pooltool.query("SELECT * FROM todo WHERE todo_id = $1", [
       id,
     ]);
     res.json(todo.rows[0]);
@@ -48,7 +50,7 @@ app.put("/todos/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const { description } = req.body;
-    const updateTodo = await pool.query(
+    const updateTodo = await pooltool.query(
       "UPDATE todo SET description = $1 WHERE todo_id = $2",
       [description, id]
     );
@@ -61,9 +63,10 @@ app.put("/todos/:id", async (req, res) => {
 app.delete("/todos/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const deleteTodo = await pool.query("DELETE FROM todo WHERE todo_id = $1", [
-      id,
-    ]);
+    const deleteTodo = await pooltool.query(
+      "DELETE FROM todo WHERE todo_id = $1",
+      [id]
+    );
     res.json("Todo is deleted");
   } catch (err) {
     console.error(err.message);
